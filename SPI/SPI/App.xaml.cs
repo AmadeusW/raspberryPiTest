@@ -37,6 +37,10 @@ namespace SPI
         // convert it to hex:               0    1    8    0    0    0  
         // and                              0    1    9    0    0    0
 
+        // Used for CSV:
+        int transmissionId = 0;
+
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -93,7 +97,7 @@ namespace SPI
             ADC.TransferFullDuplex(range2Query, responseBuffer);
             var result2 = ConvertToInt(responseBuffer);
 
-            System.Diagnostics.Debug.WriteLine($"{result1}, {result2}");
+            System.Diagnostics.Debug.WriteLine($"{transmissionId++}, {result1}, {result2}");
         }
 
         /// <summary>
