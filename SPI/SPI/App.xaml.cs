@@ -24,6 +24,19 @@ namespace SPI
     /// </summary>
     sealed partial class App : Application
     {
+        SpiDevice ADC;
+
+        // The ADC response is 10 bits. We can fit it into 2 bytes. We add one byte padding. Hence, 
+        byte[] responseBuffer = new byte[3];
+        // In SPI communication, for every byte we want to receive, we send one byte
+        // Therefore, the request buffers also are 3 bytes long
+        byte[] range1Query = new byte[3] { 0x01, 0x80, 0 };
+        byte[] range2Query = new byte[3] { 0x01, 0x90, 0 };
+        // For sensor 1, we want to send 0000 0001 1000 xxxx xxxx xxxx
+        // For sensor 2, we want to send 0000 0001 1001 xxxx xxxx xxxx
+        // convert it to hex:               0    1    8    0    0    0  
+        // and                              0    1    9    0    0    0
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -55,24 +68,12 @@ namespace SPI
                 ADC = await SpiDevice.FromIdAsync(devicesInfo[0].Id, settings);     /* Create an SpiDevice with our bus controller and SPI settings */
                 System.Diagnostics.Debug.WriteLine("InitSpi successful");
 
-            } /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine("InitSpi threw " + ex);
             }
         }
-        SpiDevice ADC;
-
-        // The ADC response is 10 bits. We can fit it into 2 bytes. We add one byte padding. Hence, 
-        byte[] responseBuffer = new byte[3];
-        // In SPI communication, for every byte we want to receive, we send one byte
-        // Therefore, the request buffers also are 3 bytes long
-        byte[] range1Query = new byte[3] { 0x01, 0x80, 0 };
-        byte[] range2Query = new byte[3] { 0x01, 0x90, 0 };
-        // For sensor 1, we want to send 0000 0001 1000 xxxx xxxx xxxx
-        // For sensor 2, we want to send 0000 0001 1001 xxxx xxxx xxxx
-        // convert it to hex:               0    1    8    0    0    0  
-        // and                              0    1    9    0    0    0
 
         private void initTimer()
         {
