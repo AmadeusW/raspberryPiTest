@@ -62,10 +62,17 @@ namespace SPI
             }
         }
         SpiDevice ADC;
-        // 0000000001 1000 00000000
+
+        // The ADC response is 10 bits. We can fit it into 2 bytes. We add one byte padding. Hence, 
+        byte[] responseBuffer = new byte[3];
+        // In SPI communication, for every byte we want to receive, we send one byte
+        // Therefore, the request buffers also are 3 bytes long
         byte[] range1Query = new byte[3] { 0x01, 0x80, 0 };
         byte[] range2Query = new byte[3] { 0x01, 0x90, 0 };
-        byte[] responseBuffer = new byte[3];
+        // For sensor 1, we want to send 0000 0001 1000 xxxx xxxx xxxx
+        // For sensor 2, we want to send 0000 0001 1001 xxxx xxxx xxxx
+        // convert it to hex:               0    1    8    0    0    0  
+        // and                              0    1    9    0    0    0
 
         private void initTimer()
         {
@@ -80,10 +87,27 @@ namespace SPI
         private void Timer_Tick(object sender, object e)
         {
             ADC.TransferFullDuplex(range1Query, responseBuffer);
-            System.Diagnostics.Debug.WriteLine($"{responseBuffer[0]}, {responseBuffer[1]}, {responseBuffer[2]}");
+            var result1 = ConvertToInt(responseBuffer);
 
             ADC.TransferFullDuplex(range2Query, responseBuffer);
-            System.Diagnostics.Debug.WriteLine($"{responseBuffer[0]}, {responseBuffer[1]}, {responseBuffer[2]}");
+            var result2 = ConvertToInt(responseBuffer);
+
+            System.Diagnostics.Debug.WriteLine($"{result1}, {result2}");
+        }
+
+        /// <summary>
+        /// Converts the array of 3 bytes into an integer.
+        /// Uses the 10 least significant bits, and discards the rest
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static int ConvertToInt(byte[] data)
+        {
+            int result = 0;
+            result = data[1] & 0x03;
+            result <<= 8;
+            result += data[2];
+            return result;
         }
 
         /// <summary>
